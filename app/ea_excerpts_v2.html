@@ -114,7 +114,7 @@ canvas{display:block;touch-action:none}
 <body>
 <div class="app">
   <div class="bar">
-    <span class="brand">EA Excerpts</span><span class="ver mut small">v1</span>
+    <span class="brand">EA Excerpts</span><span class="ver mut small">v2</span>
     <span class="seg"><button id="tabCap" class="on">1 Capture</button><button id="tabLib">2 Library</button></span>
     <span class="vsep"></span>
     <span id="capTools" class="row" style="flex:1 1 auto">
@@ -303,7 +303,7 @@ function play(buf, a, b, loop, who, onstop, from) {
   a = Math.max(0, Math.min(a, buf.duration)); b = Math.max(a + 0.01, Math.min(b, buf.duration));
   let off = from != null ? Math.max(a, Math.min(b - 0.01, from)) : a;
   if (loop) { s.loop = true; s.loopStart = a; s.loopEnd = b; s.start(0, off); }
-  else { off = a; s.start(0, a, b - a); }
+  else s.start(0, off, b - off); // v2: non-loop playback can also start inside the range (jump while playing)
   Object.assign(P, { src: s, buf, t0: ac.currentTime, off, a, b, loop, who, onstop });
   s.onended = () => { if (P.src === s) { P.src = null; const f = P.onstop; P.onstop = null; f && f(); refreshButtons(); } };
   refreshButtons(); tick();
@@ -592,7 +592,7 @@ function secText() {
       if (now - lastTap < 350) { // double tap: between markers
         const t = d.t0; let a = 0, b = S.dur; S.marks.forEach(m => { if (m.t <= t && m.t > a) a = m.t; if (m.t > t && m.t < b) b = m.t; });
         S.sel = [a, b]; S.cur = a; lastTap = 0;
-      } else { lastTap = now; if (!(S.sel && d.t0 >= S.sel[0] && d.t0 <= S.sel[1])) S.sel = null; S.cur = d.t0; if (P.src && P.who === 'src') playSrc(); }
+      } else { lastTap = now; if (!(S.sel && d.t0 >= S.sel[0] && d.t0 <= S.sel[1])) S.sel = null; jumpTo(d.t0); }
     }
     if (S.sel && S.sel[1] - S.sel[0] < 0.01) S.sel = null;
     drawOverlays();
@@ -611,10 +611,20 @@ function secText() {
   ov.addEventListener('pointermove', e => { if (od) ovMove(e); });
   ov.addEventListener('pointerup', () => od = false); ov.addEventListener('pointercancel', () => od = false);
   // ruler tap on a marker label moves cursor there
-  $('ru').addEventListener('pointerdown', e => { if (!S.buf) return; const r = $('ru').getBoundingClientRect(); S.cur = x2t(e.clientX - r.left, r.width); drawOverlays(); });
+  $('ru').addEventListener('pointerdown', e => { if (!S.buf) return; const r = $('ru').getBoundingClientRect(); jumpTo(x2t(e.clientX - r.left, r.width)); }); // v2
 })();
 function zoom(f) { const c = S.sel ? (S.sel[0] + S.sel[1]) / 2 : S.cur; S.vd *= f; S.vs = c - S.vd / 2; clampView(); drawCapture(); }
 function playSrc() { if (!S.buf) return; play(S.buf, S.cur, S.dur, false, 'src'); }
+// v2: one rule for the play point. A tap on the waveform or the time line sets it; if audio is playing,
+// the playhead jumps there and keeps playing (inside the section if a section is playing and the tap is in it).
+function jumpTo(t) {
+  if (!S.buf) return; S.cur = Math.max(0, Math.min(S.dur, t));
+  if (P.src && P.who === 'sec' && S.sel && S.cur >= S.sel[0] && S.cur < S.sel[1]) play(S.buf, S.sel[0], S.sel[1], false, 'sec', null, S.cur);
+  else if (P.src && (P.who === 'src' || P.who === 'sec')) playSrc();
+  drawOverlays();
+}
+// v2: Space = play / stop from the play point. Stopping returns the playhead to the play point.
+function capToggle() { if (!S.buf) return; if (P.src && (P.who === 'src' || P.who === 'sec')) stop(); else playSrc(); }
 function addMarker() {
   if (!S.buf) return; const pp = P.who === 'src' ? playPos() : null, t = pp != null ? pp : S.cur;
   S.marks.push({ t, note: '' }); S.marks.sort((a, b) => a.t - b.t); persistMarks(); renderMarks(); drawOverlays();
@@ -1002,14 +1012,18 @@ $('openBtn').onclick = () => openPicker(false); $('openBtn2').onclick = () => op
 $('fileIn').onchange = e => { const f = e.target.files && e.target.files[0]; if (f) loadFile(f, { relinkOnly: pickRelink }); };
 $('vCap').addEventListener('dragover', e => e.preventDefault());
 $('vCap').addEventListener('drop', e => { e.preventDefault(); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadFile(f); });
-$('playBtn').onclick = () => { if (P.src && P.who === 'src') { S.cur = playPos(); stop(); } else playSrc(); };
+$('playBtn').onclick = capToggle; // v2
 $('playSec').onclick = () => { if (P.src && P.who === 'sec') stop(); else if (S.sel) play(S.buf, S.sel[0], S.sel[1], false, 'sec'); };
 $('markBtn').onclick = addMarker; $('addBtn').onclick = openAdd;
 $('zoomIn').onclick = () => zoom(0.5); $('zoomOut').onclick = () => zoom(2);
+// v2: a button keeps focus after a tap, and Safari then also 'clicks' it when Space is released, which made
+// Space toggle twice (the sticky feel). Drop focus from buttons after use and swallow Space on key-up.
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (b) b.blur(); }, true);
+document.addEventListener('keyup', e => { if (e.code === 'Space' && !e.target.matches('input,textarea,select')) e.preventDefault(); });
 document.addEventListener('keydown', e => {
   if (e.target.matches('input,textarea,select') || $('modal').classList.contains('open')) { if (e.key === 'Escape') closeDlg(); return; }
   const lib = !$('vLib').classList.contains('hidden');
-  if (e.code === 'Space') { e.preventDefault(); lib ? $('xPlay').click() : (S.sel && !P.src ? $('playSec').click() : $('playBtn').click()); }
+  if (e.code === 'Space') { e.preventDefault(); if (e.repeat) return; lib ? $('xPlay').click() : capToggle(); } // v2: no auto-repeat, no section guessing
   else if (!lib && (e.key === 'm' || e.key === 'M')) addMarker();
   else if (!lib && (e.key === '=' || e.key === '+')) zoom(0.5);
   else if (!lib && e.key === '-') zoom(2);

@@ -8,3 +8,11 @@
   a pressed key draws its frequency line on the sonogram.
 - Back up to Dropbox… (share sheet: one .json + one 24-bit WAV per excerpt) and Restore… (pick the .json and .wavs).
 - Export notes… (Markdown) and Share audio… per excerpt.
+
+## v2 (12 Nov 2026)
+- Play point: a tap on the waveform or the time line (ruler) sets it. If audio is playing, the playhead jumps there
+  and keeps playing (a playing section continues inside the section if the tap is in it).
+- Space = play / stop from the play point (no longer guesses the section); stopping returns to the play point.
+  Key auto-repeat ignored.
+- Fixed the sticky Space: tapped buttons kept focus and Safari "clicked" them again on Space key-up (double toggle).
+  Buttons now drop focus after a tap and Space key-up is swallowed.
