@@ -20,3 +20,11 @@
 ## v3 (12 Nov 2026)
 - Renamed the stages: **Capture → Audition**, **Library → Excerpts** (tabs, side panel, buttons, dialog, messages).
   Internal ids (tabCap, vLib…) and saved data unchanged.
+
+## v4 (12 Nov 2026)
+- **Pieces**: every file opened in Audition is also kept in the app (IndexedDB `pieces` + `pieceMeta`, DB version 2),
+  so it reopens from the Pieces list with no internet. Dropbox's own "available offline" copies are not reachable from
+  a web app (Files re-downloads them), so this is the only way to study a Dropbox piece offline.
+- Pieces… › Add pieces… takes several files at once (Select › Select All in a Dropbox folder). Remove asks twice and
+  never touches the Dropbox file or saved excerpts. Shows the space used and roughly how much room is left.
+- The start screen lists kept pieces with Open.
