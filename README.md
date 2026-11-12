@@ -3,9 +3,9 @@
 A study tool for electroacoustic compositions, for the iPad and Mac: https://l-sial.github.io/ea-excerpts/
 (open it in Safari › Share › **Add to Home Screen**).
 
-1. **Capture** — open a piece (Dropbox, Files), put markers on it, select sections and add them to the **Library**
+1. **Audition** — open a piece (Dropbox, Files), put markers on it, select sections and add them to **Excerpts**
    with composer, piece, type and notes.
-2. **Library** — each excerpt as a waveform (L/R) or a sonogram (log/linear, FFT size, floor), both playable.
+2. **Excerpts** — each excerpt as a waveform (L/R) or a sonogram (log/linear, FFT size, floor), both playable.
    A full 88-key piano keyboard, A4 = 440, with note names and Hz under the keys; a key draws its line on the sonogram.
 
 Backup: **Back up to Dropbox…** — Save to Files › Dropbox › a folder. **Restore…** — pick the .json and the .wav files.

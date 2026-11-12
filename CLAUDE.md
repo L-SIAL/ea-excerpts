@@ -19,6 +19,7 @@ electroacoustic compositions kept on Dropbox. It follows VocalPrep (L-SIAL/vocal
 6. Commit; push to `main` if allowed, otherwise push a branch, open a pull request and tell the user to tap **Merge**.
 
 ## The user's rules
+- Interface words: **Audition** (stage 1) and **Excerpts** (stage 2). Code ids still say cap/lib.
 - Short replies: the result and how to use it, numbered steps.
 - Colours: parchment (#F2EDE2 / #FBF8F2) with black and muted grey-blacks; sonogram ramps white → sienna → near-black. No dark mode.
 - Keyboard: full 88 keys A0–C8, A4 = 440; note names and Hz UNDER the keys, not on them.

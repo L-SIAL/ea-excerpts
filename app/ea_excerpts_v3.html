@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EA Excerpts</title>
+<!-- v3: stage names are Audition (was Capture) and Excerpts (was Library); code ids unchanged -->
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -114,8 +115,8 @@ canvas{display:block;touch-action:none}
 <body>
 <div class="app">
   <div class="bar">
-    <span class="brand">EA Excerpts</span><span class="ver mut small">v2</span>
-    <span class="seg"><button id="tabCap" class="on">1 Capture</button><button id="tabLib">2 Library</button></span>
+    <span class="brand">EA Excerpts</span><span class="ver mut small">v3</span>
+    <span class="seg"><button id="tabCap" class="on">1 Audition</button><button id="tabLib">2 Excerpts</button></span>
     <span class="vsep"></span>
     <span id="capTools" class="row" style="flex:1 1 auto">
       <button id="openBtn">Open file…</button>
@@ -143,7 +144,7 @@ canvas{display:block;touch-action:none}
     <div class="col" style="flex:1 1 auto">
       <div id="capEmpty" class="drop">
         <b>Load a composition</b>
-        <span>Open a .wav, .aif, .flac, .mp3 or .m4a — from Dropbox via Files on iPad, or from Finder.<br>Mark sections, select one, add it to the library.</span>
+        <span>Open a .wav, .aif, .flac, .mp3 or .m4a — from Dropbox via Files on iPad, or from Finder.<br>Mark sections, select one, add it to Excerpts.</span>
         <button class="pri" id="openBtn2">Open file…</button>
         <span class="small">Or drop a file here.</span>
       </div>
@@ -155,7 +156,7 @@ canvas{display:block;touch-action:none}
           <span id="secTxt" class="mut"></span>
           <span class="grow"></span>
           <button id="playSec" disabled>▶ Play section</button>
-          <button id="addBtn" class="pri" disabled>Add to library →</button>
+          <button id="addBtn" class="pri" disabled>Add to excerpts →</button>
         </div>
         <div class="marks">
           <div class="h">Markers · tap a time to go there · double-tap the waveform between two markers to select · drag to select</div>
@@ -164,11 +165,11 @@ canvas{display:block;touch-action:none}
       </div>
     </div>
     <div class="side r">
-      <div class="sideh"><b>Library</b><span id="sideCount" class="mut small"></span></div>
+      <div class="sideh"><b>Excerpts</b><span id="sideCount" class="mut small"></span></div>
       <div style="padding:0 16px 8px"><input id="q1" type="search" placeholder="Search names, pieces, notes" style="width:100%"></div>
       <div id="sideList" class="scroll"></div>
       <div style="padding:10px;border-top:1px solid var(--line);display:flex;gap:8px">
-        <button class="pri" id="toLib" style="flex:1">Open library ▸</button>
+        <button class="pri" id="toLib" style="flex:1">Open excerpts ▸</button>
       </div>
     </div>
   </div>
@@ -185,7 +186,7 @@ canvas{display:block;touch-action:none}
         <div id="libList" class="scroll"></div>
       </div>
       <div class="lmain" id="lmain">
-        <div id="libNone" class="drop"><b>No excerpt selected</b><span>Add excerpts in Capture, then pick one from the list.</span></div>
+        <div id="libNone" class="drop"><b>No excerpt selected</b><span>Add excerpts in Audition, then pick one from the list.</span></div>
         <div id="libSel" class="col hidden" style="flex:1 1 auto;gap:10px">
           <div class="lt">
             <div style="flex:1 1 auto;min-width:0">
@@ -251,7 +252,7 @@ canvas{display:block;touch-action:none}
 
 <div class="modal" id="modal">
   <div class="dlg" role="dialog" aria-labelledby="mTitle">
-    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><h2 id="mTitle">Add to library</h2><span id="mSub" class="mut"></span></div>
+    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><h2 id="mTitle">Add to excerpts</h2><span id="mSub" class="mut"></span></div>
     <div class="fld"><label for="fName">Name</label><input id="fName" type="text" style="min-height:46px;font-size:17px"></div>
     <div class="two">
       <div class="fld"><label for="fComp">Composer</label><input id="fComp" type="text"></div>
@@ -262,7 +263,7 @@ canvas{display:block;touch-action:none}
     <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
       <button id="mPrev">▶ Preview</button>
       <button id="mCancel">Cancel</button>
-      <button id="mSave" class="pri">Save to library</button>
+      <button id="mSave" class="pri">Save to excerpts</button>
     </div>
   </div>
 </div>
@@ -448,7 +449,7 @@ async function loadFile(file, opts) {
     const ab = await file.arrayBuffer(); AC();
     const buf = await new Promise((res, rej) => { const p = ac.decodeAudioData(ab, res, rej); if (p && p.then) p.then(res, rej); });
     const n = await relink(file.name, buf);
-    if (opts.relinkOnly) { toast(n ? 'Restored ' + n + ' excerpt' + (n > 1 ? 's' : '') + ' from ' + file.name : 'No excerpts in the library come from ' + file.name); renderLists(); showExcerpt(curX); return; }
+    if (opts.relinkOnly) { toast(n ? 'Restored ' + n + ' excerpt' + (n > 1 ? 's' : '') + ' from ' + file.name : 'No saved excerpts come from ' + file.name); renderLists(); showExcerpt(curX); return; }
     stop();
     S.buf = buf; S.name = file.name; S.key = fileKey(file.name); S.dur = buf.duration;
     S.vs = 0; S.vd = buf.duration; S.cur = 0; S.sel = null; S.marks = []; S.comp = ''; S.piece = '';
@@ -680,9 +681,9 @@ function openAdd() {
   if (!S.sel) return; const [a, b] = S.sel;
   const mk = S.marks.find(m => Math.abs(m.t - a) < 0.02);
   dlg = { mode: 'add', a, b, group: '' };
-  $('mTitle').textContent = 'Add to library'; $('mSub').textContent = 'from ' + S.name + ' · ' + fmt(a) + ' – ' + fmt(b);
+  $('mTitle').textContent = 'Add to excerpts'; $('mSub').textContent = 'from ' + S.name + ' · ' + fmt(a) + ' – ' + fmt(b);
   $('fName').value = mk && mk.note ? mk.note : ''; $('fComp').value = S.comp; $('fPiece').value = S.piece; $('fNotes').value = '';
-  $('mPrev').classList.remove('hidden'); $('mSave').textContent = 'Save to library';
+  $('mPrev').classList.remove('hidden'); $('mSave').textContent = 'Save to excerpts';
   chipList(''); $('modal').classList.add('open'); setTimeout(() => $('fName').focus(), 50);
 }
 function openEdit(m) {
@@ -728,7 +729,7 @@ function renderLists() {
   const n = X.size, c = n + ' excerpt' + (n === 1 ? '' : 's');
   $('sideCount').textContent = c; $('libCount').textContent = c; $('libCount2').textContent = c;
   const s = grouped(filt($('q1').value), 'piece');
-  $('sideList').innerHTML = s.length ? s.map(r => cardHtml(r.m, r.head, true)).join('') : '<div class="empty">' + (n ? 'Nothing matches.' : 'Select a section of a piece and press “Add to library”.') + '</div>';
+  $('sideList').innerHTML = s.length ? s.map(r => cardHtml(r.m, r.head, true)).join('') : '<div class="empty">' + (n ? 'Nothing matches.' : 'Select a section of a piece and press “Add to excerpts”.') + '</div>';
   const l = grouped(filt($('q2').value), $('groupBy').value);
   $('libList').innerHTML = l.length ? l.map(r => cardHtml(r.m, r.head, false)).join('') : '<div class="empty">' + (n ? 'Nothing matches.' : 'No excerpts yet.') + '</div>';
 }

@@ -16,3 +16,7 @@
   Key auto-repeat ignored.
 - Fixed the sticky Space: tapped buttons kept focus and Safari "clicked" them again on Space key-up (double toggle).
   Buttons now drop focus after a tap and Space key-up is swallowed.
+
+## v3 (12 Nov 2026)
+- Renamed the stages: **Capture → Audition**, **Library → Excerpts** (tabs, side panel, buttons, dialog, messages).
+  Internal ids (tabCap, vLib…) and saved data unchanged.
